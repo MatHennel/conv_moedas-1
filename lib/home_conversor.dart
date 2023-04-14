@@ -14,20 +14,18 @@ class _HomeConverState extends State<HomeConver> {
   final realControl = TextEditingController();
   final dolarControl = TextEditingController();
   final euroControl = TextEditingController();
-  final dolarCaribeControl = TextEditingController();
-
+  final solDoPeruControl = TextEditingController();
 
   double dolar = 0;
   double euro = 0;
-  double dolarCaribe = 0;
-
+  double solDoPeru = 0;
 
   @override
   void dispose() {
     realControl.dispose();
     dolarControl.dispose();
     euroControl.dispose();
-    dolarCaribeControl.dispose();
+    solDoPeruControl.dispose();
 
     super.dispose();
   }
@@ -45,7 +43,7 @@ class _HomeConverState extends State<HomeConver> {
               if (snapshot.connectionState == ConnectionState.done) {
                 dolar = double.parse(snapshot.data!['USDBRL']['bid']);
                 euro = double.parse(snapshot.data!['EURBRL']['bid']);
-                dolarCaribe = double.parse(snapshot.data!['XCDBRL']['bid']);
+                solDoPeru = double.parse(snapshot.data!['PENBRL']['bid']);
                 // dolar = snapshot.data!['USD']['buy'];
                 // euro = snapshot.data!['EUR']['buy'];
                 return SingleChildScrollView(
@@ -67,8 +65,8 @@ class _HomeConverState extends State<HomeConver> {
                       currencyTextField(
                           'Euros', '€ ', euroControl, _convertEuro),
                       const SizedBox(height: 20),
-                      currencyTextField(
-                          'Dolar Caribenho', 'US\$ ', dolarCaribeControl, _convertDolarCaribe),
+                      currencyTextField('Sol do Peru', 'S/ ', solDoPeruControl,
+                          _convertSolDoPeru),
                     ],
                   ),
                 );
@@ -111,7 +109,7 @@ class _HomeConverState extends State<HomeConver> {
     double real = double.parse(text);
     dolarControl.text = (real / dolar).toStringAsFixed(2);
     euroControl.text = (real / euro).toStringAsFixed(2);
-    dolarCaribeControl.text = (real / dolarCaribe).toStringAsFixed(2);
+    solDoPeruControl.text = (real / solDoPeru).toStringAsFixed(2);
   }
 
   void _convertDolar(String text) {
@@ -122,9 +120,21 @@ class _HomeConverState extends State<HomeConver> {
 
     double dolar = double.parse(text);
     realControl.text = (this.dolar * dolar).toStringAsFixed(2);
+    solDoPeruControl.text = (this.dolar * dolar / solDoPeru).toStringAsFixed(2);
     euroControl.text = ((this.dolar * dolar) / euro).toStringAsFixed(2);
-    dolarCaribeControl.text = ((this.dolar * dolar) / dolarCaribe).toStringAsFixed(2);
+  }
 
+  void _convertSolDoPeru(String text) {
+    if (text.trim().isEmpty) {
+      _clearFields();
+      return;
+    }
+
+    double solDoPeru = double.parse(text);
+    realControl.text = (this.solDoPeru * solDoPeru).toStringAsFixed(2);
+    euroControl.text = ((this.solDoPeru * solDoPeru) / euro).toStringAsFixed(2);
+    dolarControl.text =
+        ((this.solDoPeru * solDoPeru) / dolar).toStringAsFixed(2);
   }
 
   void _convertEuro(String text) {
@@ -135,31 +145,14 @@ class _HomeConverState extends State<HomeConver> {
 
     double euro = double.parse(text);
     realControl.text = (this.euro * euro).toStringAsFixed(2);
+    solDoPeruControl.text = (this.euro * euro / solDoPeru).toStringAsFixed(2);
     dolarControl.text = ((this.euro * euro) / dolar).toStringAsFixed(2);
-    dolarCaribeControl.text = ((this.euro * euro) / dolarCaribe).toStringAsFixed(2);
-
   }
-
-  void _convertDolarCaribe(String text) {
-    if (text.trim().isEmpty) {
-      _clearFields();
-      return;
-    }
-
-    double dolarCaribe = double.parse(text);
-    realControl.text = (this.dolarCaribe * dolarCaribe).toStringAsFixed(2);
-    dolarControl.text = ((this.dolarCaribe * dolarCaribe) / dolar).toStringAsFixed(2);
-    euroControl.text = ((this.dolarCaribe * dolarCaribe) / euro).toStringAsFixed(2);
-
-  }
-
 
   void _clearFields() {
     realControl.clear();
     dolarControl.clear();
     euroControl.clear();
-    dolarCaribeControl.clear();
-
   }
 }
 
@@ -168,7 +161,7 @@ Future<Map> getData() async {
   //* https://docs.awesomeapi.com.br/api-de-moedas
 
   const requestApi =
-      "https://economia.awesomeapi.com.br/json/last/USD-BRL,EUR-BRL,XCD-BRL";
+      "https://economia.awesomeapi.com.br/json/last/USD-BRL,EUR-BRL,PEN-BRL";
   var response = await http.get(Uri.parse(requestApi));
   return jsonDecode(response.body);
 
